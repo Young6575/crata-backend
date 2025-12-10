@@ -54,4 +54,21 @@ export class AuthService {
         await this.userService.updateSessionToken(userId, null);
     }
 
+    // 토큰 갱신 (세션 연장)
+    async refreshToken(userId: number, sessionToken: string): Promise<string> {
+        const user = await this.userService.findById(userId);
+        if (!user || user.sessionToken !== sessionToken) {
+            throw new UnauthorizedException('세션이 유효하지 않습니다.');
+        }
+
+        const payload = { 
+            sub: user.userId, 
+            username: user.accountId, 
+            role: user.role,
+            sessionToken
+        };
+
+        return this.jwtService.signAsync(payload);
+    }
+
 }

@@ -32,4 +32,14 @@ export class AuthController {
         return { message: '로그아웃 되었습니다.' };
     }
 
+    // 토큰 갱신 (세션 연장)
+    @UseGuards(JwtAuthGuard)
+    @Post('refresh')
+    @HttpCode(HttpStatus.OK)
+    async refreshToken(@Request() req) {
+        const { sub: userId, sessionToken } = req.user;
+        const newToken = await this.authService.refreshToken(userId, sessionToken);
+        return { access_token: newToken };
+    }
+
 }

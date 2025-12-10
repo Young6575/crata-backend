@@ -53,7 +53,7 @@ export class User {
     lastLoginAt : Date;
 
     // --- session_token --- [현재 활성 세션 토큰 - 동시 로그인 방지용]
-    @Column({ type: 'varchar', nullable: true })
+    @Column({ type: 'varchar', nullable: true, name: 'session_token' })
     sessionToken: string | null;
 
 }
