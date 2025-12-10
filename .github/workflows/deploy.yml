@@ -2,7 +2,7 @@ name: Deploy to EC2
 
 on:
   push:
-    branches: [ master ]
+    branches: [ production ]  # master에서 production으로 변경하여 일시 비활성화
 
 jobs:
   deploy:
