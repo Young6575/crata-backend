@@ -22,5 +22,7 @@ jobs:
           git pull origin master
           npm install
           npm run build
-          pm2 restart crata-api || pm2 start dist/main.js --name crata-api
+          pm2 stop crata-api || true
+          pm2 delete crata-api || true
+          pm2 start dist/main.js --name crata-api
           pm2 save
