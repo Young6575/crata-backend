@@ -20,9 +20,15 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
 
     // 4. 토큰 검사가 성공하면 이 함수가 실행됨
-    // payload: 토큰을 해독한 내용( sub, username, role)
+    // payload: 토큰을 해독한 내용( sub, username, role, sessionToken)
     async validate(payload: any) {
         // 여기서 리턴한 값은 자동으로 'req.user'에 들어간다.
-        return { userId: payload.sub, accountId: payload.username, role: payload.role }
+        return { 
+            sub: payload.sub,
+            userId: payload.sub, 
+            accountId: payload.username, 
+            role: payload.role,
+            sessionToken: payload.sessionToken 
+        }
     }
 }
