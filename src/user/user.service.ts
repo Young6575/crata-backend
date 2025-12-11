@@ -110,6 +110,10 @@ export class UserService {
     // 6. 세션 토큰 업데이트 (동시 로그인 방지용)
     // ----------------------------------------------------
     async updateSessionToken(userId: number, sessionToken: string | null): Promise<void> {
+        if (!userId) {
+            this.logger.warn('updateSessionToken: userId가 없습니다.');
+            return;
+        }
         await this.userRepository.update(userId, { 
             sessionToken,
             lastLoginAt: sessionToken ? new Date() : undefined 
