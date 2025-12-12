@@ -90,7 +90,9 @@ export class TicketService {
             testSlugs: ticket.product.contents.map(c => c.test.slug), // 모든 검사 slug 목록
             purchaserName: ticket.order?.user?.name,
             role: ticket.order?.user?.role,
-            status: ticket.order?.user?.status
+            status: ticket.order?.user?.status,
+            // 결과지 페이지 조합 (behavior 검사용)
+            resultPages: ticket.product.resultPages || null,
         }
     }
 }
