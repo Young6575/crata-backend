@@ -20,6 +20,10 @@ export class Test {
   @Column({ type: 'text', nullable: true })
   description: string; // 예: '개인 및 조직의 행동 방식을...'
 
+  // 결과지 페이지 조합 (예: [1, 2, 6, 7, 8] - 개인수준)
+  // behavior 검사의 경우 page1~8 중 선택하여 결과지 구성
+  @Column({ type: 'jsonb', nullable: true })
+  resultPages: number[];
 
   // 1. "하나의 검사(Test)는 여러 개의 버전(TestVersion)을 가질 수 있다."
   // (예: '행동 검사'는 'BEHAVIOR_V10', 'BEHAVIOR_V11' 등을 가짐)

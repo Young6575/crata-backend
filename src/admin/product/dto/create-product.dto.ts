@@ -65,4 +65,10 @@ export class CreateAdminProductDto {
   @ValidateNested({ each: true })
   @Type(() => PriceTierDto)
   priceTiers?: PriceTierDto[];
+
+  // 결과지 페이지 조합 (behavior 검사용, 예: [1, 2, 6, 7, 8])
+  @IsOptional()
+  @IsArray()
+  @IsNumber({}, { each: true })
+  resultPages?: number[];
 }

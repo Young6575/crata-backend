@@ -80,6 +80,8 @@ export class ResultService {
         answers: result.answers, // 설문 응답 데이터 포함
       },
       createdAt: result.createdAt,
+      // 결과지 페이지 조합 (behavior 검사용)
+      resultPages: result.test?.resultPages || null,
     };
   }
 }
