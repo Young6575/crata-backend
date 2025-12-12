@@ -11,16 +11,20 @@ interface TossConfirmResponse {
   requestedAt: string;
   approvedAt: string;
   receipt: { url: string };
+  easyPay?: { provider: string; amount: number };
+  card?: { company: string; number: string; installmentPlanMonths: number };
 }
 
 interface TossCancelResponse {
   paymentKey: string;
-  cancels: { cancelAmount: number; canceledAt: string }[];
+  cancels: { cancelAmount: number; canceledAt: string; cancelReason: string }[];
+  status: string;
 }
 
 @Injectable()
 export class TossPaymentService {
   private readonly secretKey: string;
+  // v2 API 엔드포인트 사용
   private readonly baseUrl = 'https://api.tosspayments.com/v1/payments';
 
   constructor(private configService: ConfigService) {
