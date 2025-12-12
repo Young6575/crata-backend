@@ -42,6 +42,12 @@ export class UpdateAdminProductDto {
   @ValidateNested({ each: true })
   @Type(() => PriceTierDto)
   priceTiers?: PriceTierDto[];
+
+  // 결과지 페이지 조합 (behavior 검사용)
+  @IsOptional()
+  @IsArray()
+  @IsNumber({}, { each: true })
+  resultPages?: number[];
 }
 
 export class UpdateProductStatusDto {

@@ -34,6 +34,11 @@ export class Product {
   @Column({ nullable: true })
   imageUrl: string;
 
+  // 결과지 페이지 조합 (behavior 검사용)
+  // 예: [1, 2, 6, 7, 8] - 개인수준, [1, 3, 6, 7, 8] - 집단수준
+  @Column({ type: 'jsonb', nullable: true })
+  resultPages: number[];
+
   // -------------------------------------------------------
   // [추가] 1. "종합 패키지"용 연결 (1:N)
   // (이 상품이 어떤 검사지들로 구성되어 있는지)
