@@ -51,7 +51,7 @@ export class AdminProductController {
 
   @Delete(':id')
   async delete(@Param('id', ParseIntPipe) id: number) {
-    await this.adminProductService.delete(id);
-    return { success: true, message: 'Product deleted' };
+    const result = await this.adminProductService.delete(id);
+    return { success: true, ...result };
   }
 }

@@ -1,9 +1,10 @@
-import { Injectable, NotFoundException, Logger, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, NotFoundException, Logger, InternalServerErrorException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { Product } from '../../product/product.entity';
 import { ProductContents } from '../../product/product-contents.entity';
 import { ProductPriceTier } from '../../product/product-price-tier.entity';
+import { Ticket } from '../../ticket/ticket.entity';
 import { Test } from '../../assessment/test.entity';
 import { CategoryTree } from '../../question/category-tree/category-tree.entity';
 import { CreateAdminProductDto } from './dto/create-product.dto';
@@ -152,7 +153,7 @@ export class AdminProductService {
     return product;
   }
 
-  async delete(id: number): Promise<void> {
+  async delete(id: number): Promise<{ deleted: boolean; message: string }> {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -160,6 +161,24 @@ export class AdminProductService {
     try {
       const product = await this.findOne(id);
       
+      // Check if product has any tickets (orders)
+      const ticketCount = await queryRunner.manager.count(Ticket, {
+        where: { product: { productId: id } },
+      });
+
+      if (ticketCount > 0) {
+        // Product has tickets - cannot delete, set to INACTIVE instead
+        product.status = 'INACTIVE';
+        await queryRunner.manager.save(product);
+        await queryRunner.commitTransaction();
+        this.logger.log(`Product deactivated (has ${ticketCount} tickets): ${product.name}`);
+        return { 
+          deleted: false, 
+          message: `상품에 ${ticketCount}개의 티켓이 연결되어 있어 삭제할 수 없습니다. 대신 비활성화 처리되었습니다.` 
+        };
+      }
+
+      // No tickets - safe to delete
       // 1. Delete related ProductContents first
       await queryRunner.manager.delete(ProductContents, { product: { productId: id } });
       
@@ -171,6 +190,7 @@ export class AdminProductService {
       
       await queryRunner.commitTransaction();
       this.logger.log(`Product deleted: ${product.name}`);
+      return { deleted: true, message: '상품이 삭제되었습니다.' };
     } catch (error) {
       await queryRunner.rollbackTransaction();
       this.logger.error(`Failed to delete product: ${error.message}`);
