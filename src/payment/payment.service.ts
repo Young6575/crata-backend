@@ -91,6 +91,27 @@ export class PaymentService {
       throw new HttpException('결제 금액이 일치하지 않습니다', HttpStatus.BAD_REQUEST);
     }
 
+    // 이미 처리된 paymentKey인지 확인 (중복 승인 방지)
+    const existingPayment = await this.paymentRepo.findOne({
+      where: { pgTid: dto.paymentKey },
+    });
+    if (existingPayment) {
+      // 이미 성공한 결제면 기존 결과 반환
+      if (existingPayment.status === 'PAID') {
+        const tickets = await this.ticketRepo.find({
+          where: { order: { orderId: order.orderId } },
+        });
+        return {
+          paymentId: existingPayment.paymentId,
+          status: 'PAID' as const,
+          orderId: order.merchantUid,
+          amount: existingPayment.amount,
+          receiptUrl: existingPayment.receiptUrl,
+          tickets: tickets.map(t => ({ ticketId: t.ticketId, code: t.code })),
+        };
+      }
+    }
+
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();

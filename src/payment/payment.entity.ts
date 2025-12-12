@@ -18,7 +18,8 @@ export class Payment {
   @JoinColumn({ name: 'order_id' })
   order: Order;
 
-  // 토스페이먼츠 paymentKey
+  // PG사 거래 고유 ID (토스페이먼츠의 paymentKey)
+  // 결제 승인, 취소, 조회 시 사용되는 식별자
   @Column({ unique: true })
   pgTid: string;
 
