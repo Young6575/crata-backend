@@ -53,7 +53,7 @@ export class ResultService {
   async findOne(id: string, userId: number) {
     const result = await this.testResultRepo.findOne({
       where: { id },
-      relations: ['test', 'version', 'user', 'ticket', 'ticket.order', 'ticket.order.user'],
+      relations: ['test', 'version', 'user', 'ticket', 'ticket.order', 'ticket.order.user', 'ticket.product'],
     });
 
     if (!result) {
@@ -80,8 +80,8 @@ export class ResultService {
         answers: result.answers, // 설문 응답 데이터 포함
       },
       createdAt: result.createdAt,
-      // 결과지 페이지 조합 (behavior 검사용)
-      resultPages: result.test?.resultPages || null,
+      // 결과지 페이지 조합 (behavior 검사용) - product에서 가져옴
+      resultPages: result.ticket?.product?.resultPages || null,
     };
   }
 }
