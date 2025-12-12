@@ -48,6 +48,12 @@ export class UpdateAdminProductDto {
   @IsArray()
   @IsNumber({}, { each: true })
   resultPages?: number[];
+
+  // 색채유형 결과지 페이지 조합
+  @IsOptional()
+  @IsArray()
+  @IsNumber({}, { each: true })
+  colorResultPages?: number[];
 }
 
 export class UpdateProductStatusDto {

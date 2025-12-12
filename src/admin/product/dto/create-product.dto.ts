@@ -71,4 +71,10 @@ export class CreateAdminProductDto {
   @IsArray()
   @IsNumber({}, { each: true })
   resultPages?: number[];
+
+  // 색채유형 결과지 페이지 조합 (예: [1, 2, 3])
+  @IsOptional()
+  @IsArray()
+  @IsNumber({}, { each: true })
+  colorResultPages?: number[];
 }

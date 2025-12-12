@@ -93,6 +93,8 @@ export class TicketService {
             status: ticket.order?.user?.status,
             // 결과지 페이지 조합 (behavior 검사용)
             resultPages: ticket.product.resultPages || null,
+            // 색채유형 결과지 페이지 조합
+            colorResultPages: ticket.product.colorResultPages || null,
         }
     }
 }

@@ -39,6 +39,11 @@ export class Product {
   @Column({ type: 'jsonb', nullable: true })
   resultPages: number[];
 
+  // 색채유형 결과지 페이지 조합
+  // 예: [1, 2, 3] - 전체, [2, 3] - 기본
+  @Column({ type: 'jsonb', nullable: true })
+  colorResultPages: number[];
+
   // -------------------------------------------------------
   // [추가] 1. "종합 패키지"용 연결 (1:N)
   // (이 상품이 어떤 검사지들로 구성되어 있는지)
