@@ -153,9 +153,30 @@ export class AdminProductService {
   }
 
   async delete(id: number): Promise<void> {
-    const product = await this.findOne(id);
-    // TODO: Check if product has orders before deleting
-    await this.productRepository.remove(product);
-    this.logger.log(`Product deleted: ${product.name}`);
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const product = await this.findOne(id);
+      
+      // 1. Delete related ProductContents first
+      await queryRunner.manager.delete(ProductContents, { product: { productId: id } });
+      
+      // 2. Delete related PriceTiers
+      await queryRunner.manager.delete(ProductPriceTier, { product: { productId: id } });
+      
+      // 3. Delete the product
+      await queryRunner.manager.remove(product);
+      
+      await queryRunner.commitTransaction();
+      this.logger.log(`Product deleted: ${product.name}`);
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      this.logger.error(`Failed to delete product: ${error.message}`);
+      throw new InternalServerErrorException('Failed to delete product');
+    } finally {
+      await queryRunner.release();
+    }
   }
 }
