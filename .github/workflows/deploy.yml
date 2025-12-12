@@ -17,8 +17,10 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
+            export HOME=/home/ec2-user
+            git config --global --add safe.directory /home/ec2-user/crata-backend
             cd ~/crata-backend
-            git pull origin main
+            git pull origin main || exit 1
             npm install
             npm run build
             pm2 restart crata-api
