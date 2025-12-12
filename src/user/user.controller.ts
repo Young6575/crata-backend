@@ -31,8 +31,8 @@ export class UserController {
     // --- 기존 API 유지 ---
     @UseGuards(AuthGuard('jwt')) // 🚧 "검표원: JWT 토큰 없으면 못 지나갑니다!"
     @Get('/profile')
-    getProfile(@Request() req) {
-        // 토큰이 통과되면, req.user 에 validate에서 리턴한 정보가 있다.
-        return req.user;
+    async getProfile(@Request() req) {
+        // DB에서 사용자 정보 조회 (name, email 등 포함)
+        return this.userService.findById(req.user.userId);
     }
 }
