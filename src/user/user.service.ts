@@ -6,6 +6,7 @@ import * as bcrypt from 'bcrypt';
 import { UserRole } from 'src/common/enums/user-role.enum';
 import { CreateCompanyManagerDto } from './dto/create-company-manager.dto';
 import { CreateIndividualUserDto } from './dto/create-individual-user.dto';
+import { CreateTeacherDto } from './dto/create-teacher.dto';
 
 
 @Injectable()
@@ -73,7 +74,31 @@ export class UserService {
 
 
     // ----------------------------------------------------
-    // 3. [공통] DB 저장 로직 (중복 에러 처리 포함)
+    // 3. [핵심] 상담사/강사 회원가입 (ROLE: TEACHER)
+    // ----------------------------------------------------
+    async createTeacher(teacherDto: CreateTeacherDto): Promise<User> {
+        const { accountId, password, name, phoneNumber, birthDate, certification, organization, specialty } = teacherDto;
+
+        const userRole = UserRole.TEACHER;
+
+        const salt = await bcrypt.genSalt();
+        const hashedPassword = await bcrypt.hash(password, salt);
+
+        const user = this.userRepository.create({
+            accountId,
+            password: hashedPassword,
+            name,
+            phoneNumber,
+            birthDate,
+            role: userRole,
+            status: 'active'
+        });
+
+        return this.userRepository.save(user);
+    }
+
+    // ----------------------------------------------------
+    // 4. [공통] DB 저장 로직 (중복 에러 처리 포함)
     // ----------------------------------------------------
     private async saveUser(user: User): Promise<User> {
         try {

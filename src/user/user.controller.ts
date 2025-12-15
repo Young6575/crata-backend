@@ -2,9 +2,10 @@ import { Body, Controller, Get, Post, Request, UseGuards, ValidationPipe } from 
 import { UserService } from './user.service';
 import { AuthGuard } from '@nestjs/passport';
 
-// 👇 [추가] 분리된 DTO 2개를 임포트합니다.
+// 👇 [추가] 분리된 DTO 3개를 임포트합니다.
 import { CreateIndividualUserDto } from './dto/create-individual-user.dto';
 import { CreateCompanyManagerDto } from './dto/create-company-manager.dto';
+import { CreateTeacherDto } from './dto/create-teacher.dto';
 
 @Controller('user') // http://localhost:3000/user
 export class UserController {
@@ -24,6 +25,12 @@ export class UserController {
     @Post('signup/manager')
     async signupManager(@Body(ValidationPipe) dto: CreateCompanyManagerDto) {
         return this.userService.createCompanyManager(dto);
+    }
+
+    // 3. [상담사/강사 가입] POST /user/signup/teacher
+    @Post('signup/teacher')
+    async signupTeacher(@Body(ValidationPipe) dto: CreateTeacherDto) {
+        return this.userService.createTeacher(dto);
     }
 
 
