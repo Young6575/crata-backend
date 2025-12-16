@@ -200,6 +200,20 @@ export class PaymentService {
       throw new HttpException('환불 가능한 결제가 아닙니다', HttpStatus.BAD_REQUEST);
     }
 
+    // 청약철회 7일 제한 확인
+    const paidAt = payment.paidAt || payment.order.paidAt;
+    if (paidAt) {
+      const daysSincePurchase = Math.floor(
+        (Date.now() - new Date(paidAt).getTime()) / (1000 * 60 * 60 * 24)
+      );
+      if (daysSincePurchase > 7) {
+        throw new HttpException(
+          '구매일로부터 7일이 경과하여 청약철회가 불가능합니다. 고객센터로 문의해주세요.',
+          HttpStatus.BAD_REQUEST
+        );
+      }
+    }
+
     // 미사용 티켓 확인
     const tickets = await this.ticketRepo.find({
       where: { order: { orderId: payment.order.orderId } },
@@ -267,10 +281,21 @@ export class PaymentService {
 
   // 사용자 결제 내역 조회
   async getUserPayments(userId: number) {
-    return this.paymentRepo.find({
+    const payments = await this.paymentRepo.find({
       where: { order: { user: { userId } } },
       relations: ['order', 'order.orderItems', 'order.orderItems.product'],
       order: { paidAt: 'DESC' },
     });
+
+    // 각 결제에 대한 티켓 정보 추가
+    for (const payment of payments) {
+      const tickets = await this.ticketRepo.find({
+        where: { order: { orderId: payment.order.orderId } },
+        select: ['ticketId', 'code', 'status'],
+      });
+      (payment as any).tickets = tickets;
+    }
+
+    return payments;
   }
 }
