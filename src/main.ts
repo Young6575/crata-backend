@@ -1,3 +1,7 @@
+import { config } from 'dotenv';
+// 환경변수 먼저 로드 (TypeORM transformer에서 사용하기 위해)
+config({ path: process.env.NODE_ENV === 'production' ? '.env.production' : '.env' });
+
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
