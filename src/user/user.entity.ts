@@ -1,6 +1,30 @@
 import { Entity, Column, CreateDateColumn, UpdateDateColumn, PrimaryGeneratedColumn, OneToMany } from "typeorm";
 import { TestResult } from './../result/test-result.entity';
 import {UserRole } from '../common/enums/user-role.enum';
+import { encrypt, decrypt } from '../common/utils/encryption.util';
+
+// 암호화 Transformer (문자열용)
+const encryptedStringTransformer = {
+    to: (value: string | null): string | null => encrypt(value),
+    from: (value: string | null): string | null => decrypt(value),
+};
+
+// 암호화 Transformer (날짜용 - 문자열로 저장)
+const encryptedDateTransformer = {
+    to: (value: Date | string | null): string | null => {
+        if (!value) return null;
+        const dateStr = value instanceof Date ? value.toISOString().split('T')[0] : String(value);
+        return encrypt(dateStr);
+    },
+    from: (value: string | null): Date | null => {
+        if (!value) return null;
+        const decrypted = decrypt(value);
+        if (!decrypted) return null;
+        // 이미 Date 형식이면 그대로 반환
+        const date = new Date(decrypted);
+        return isNaN(date.getTime()) ? null : date;
+    },
+};
 
 @Entity({ name : 'users'})
 export class User {
@@ -14,14 +38,27 @@ export class User {
     // --- password --- [비밀번호]
     @Column({ type : 'varchar', nullable : false})
     password : string;
-    // --- name --- [사용자 이름]
-    @Column({ type : 'varchar', nullable : false})
+    // --- name --- [사용자 이름] - 암호화
+    @Column({ 
+        type : 'varchar', 
+        nullable : false,
+        transformer: encryptedStringTransformer
+    })
     name : string;
-    // --- birth_date --- [생년월일]
-    @Column({ type: 'date', name: 'birth_date', nullable: true })
+    // --- birth_date --- [생년월일] - 암호화 (varchar로 변경)
+    @Column({ 
+        type: 'varchar', 
+        name: 'birth_date', 
+        nullable: true,
+        transformer: encryptedDateTransformer
+    })
     birthDate: Date;
-    // --- phone_number --- [전화번호]
-    @Column({ type : 'varchar', unique : true, nullable : true})
+    // --- phone_number --- [전화번호] - 암호화
+    @Column({ 
+        type : 'varchar', 
+        nullable : true,
+        transformer: encryptedStringTransformer
+    })
     phoneNumber : string;
     // --- role --- [역할]
     @Column({ type : 'enum', enum: UserRole, default: UserRole.USER ,nullable : false})
