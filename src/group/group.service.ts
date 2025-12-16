@@ -27,9 +27,14 @@ export class GroupService {
   }
 
   // 그룹 상세 조회 (티켓 목록 + 직접 추가된 결과 포함)
-  async findGroupDetail(userId: number, groupId: number) {
+  async findGroupDetail(userId: number, groupId: number, role?: string) {
+    // admin인 경우 모든 그룹 접근 가능
+    const whereCondition = role === 'admin' 
+      ? { groupId }
+      : { groupId, admin: { userId } };
+    
     const group = await this.groupRepository.findOne({
-      where: { groupId, admin: { userId } },
+      where: whereCondition,
       relations: ['tickets', 'tickets.product', 'tickets.testResult'],
     });
 
@@ -185,6 +190,14 @@ export class GroupService {
       createdAt: r.createdAt,
       userMeta: r.userMeta,
     }));
+  }
+
+  // 관리자용: 모든 그룹 조회
+  async findAllGroups() {
+    return this.groupRepository.find({
+      relations: ['tickets', 'admin'],
+      order: { createdAt: 'DESC' },
+    });
   }
 
 }

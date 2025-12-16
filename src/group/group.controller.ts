@@ -16,12 +16,16 @@ export class GroupController {
 
   @Get('my')
   async getMyGroups(@Req() req) {
+    // admin인 경우 모든 그룹 조회
+    if (req.user.role === 'admin') {
+      return this.groupService.findAllGroups();
+    }
     return this.groupService.findMyGroups(req.user.userId);
   }
 
   @Get(':id')
   async getGroupDetail(@Req() req, @Param('id') id: string) {
-    return this.groupService.findGroupDetail(req.user.userId, Number(id));
+    return this.groupService.findGroupDetail(req.user.userId, Number(id), req.user.role);
   }
 
   @Post()
@@ -65,5 +69,15 @@ export class GroupController {
   @Get('unassigned/results')
   async getUnassignedResults(@Req() req) {
     return this.groupService.getUnassignedResults(req.user.userId);
+  }
+
+  // 관리자용: 모든 그룹 조회
+  @Get('admin/all')
+  async getAllGroups(@Req() req) {
+    // admin 권한 체크
+    if (req.user.role !== 'admin') {
+      throw new Error('관리자 권한이 필요합니다.');
+    }
+    return this.groupService.findAllGroups();
   }
 }

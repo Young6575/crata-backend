@@ -48,9 +48,35 @@ export class ResultService {
   }
 
   /**
-   * 특정 검사 결과 상세 조회
+   * 관리자용: 모든 검사 결과 목록 조회
    */
-  async findOne(id: string, userId: number) {
+  async findAll() {
+    const results = await this.testResultRepo
+      .createQueryBuilder('result')
+      .leftJoinAndSelect('result.test', 'test')
+      .leftJoinAndSelect('result.version', 'version')
+      .orderBy('result.createdAt', 'DESC')
+      .take(500)
+      .getMany();
+
+    return results.map((result) => ({
+      id: result.id,
+      testName: result.test?.name || '알 수 없음',
+      testSlug: result.test?.slug || '',
+      versionCode: result.version?.versionCode || '',
+      resultVersion: result.resultVersion,
+      userMeta: {
+        name: result.userMeta?.name || '익명',
+      },
+      createdAt: result.createdAt,
+    }));
+  }
+
+  /**
+   * 특정 검사 결과 상세 조회
+   * admin인 경우 모든 결과 접근 가능
+   */
+  async findOne(id: string, userId: number, role?: string) {
     const result = await this.testResultRepo.findOne({
       where: { id },
       relations: ['test', 'version', 'user', 'ticket', 'ticket.order', 'ticket.order.user', 'ticket.product'],
@@ -60,12 +86,14 @@ export class ResultService {
       throw new NotFoundException('검사 결과를 찾을 수 없습니다.');
     }
 
-    // 본인 결과만 조회 가능
-    const directUserId = result.user?.userId;
-    const ticketUserId = result.ticket?.order?.user?.userId;
-    
-    if (directUserId !== userId && ticketUserId !== userId) {
-      throw new ForbiddenException('접근 권한이 없습니다.');
+    // admin이 아닌 경우 본인 결과만 조회 가능
+    if (role !== 'admin') {
+      const directUserId = result.user?.userId;
+      const ticketUserId = result.ticket?.order?.user?.userId;
+      
+      if (directUserId !== userId && ticketUserId !== userId) {
+        throw new ForbiddenException('접근 권한이 없습니다.');
+      }
     }
 
     return {
