@@ -51,7 +51,8 @@ export class GroupService {
       .filter(t => t.testResult)
       .map(t => t.testResult.id);
     
-    const directResults = await this.testResultRepository
+    // getMany()로 전체 엔티티를 가져와야 transformer가 적용됨
+    const directResultsRaw = await this.testResultRepository
       .createQueryBuilder('result')
       .where('result.group_id = :groupId', { groupId })
       .andWhere(ticketResultIds.length > 0 
@@ -60,8 +61,14 @@ export class GroupService {
         { ticketResultIds }
       )
       .orderBy('result.createdAt', 'DESC')
-      .select(['result.id', 'result.createdAt', 'result.userMeta'])
       .getMany();
+    
+    // 필요한 필드만 반환
+    const directResults = directResultsRaw.map(r => ({
+      id: r.id,
+      createdAt: r.createdAt,
+      userMeta: r.userMeta,
+    }));
 
     return {
       ...group,
@@ -147,25 +154,37 @@ export class GroupService {
       throw new NotFoundException('그룹을 찾을 수 없습니다.');
     }
 
+    // getMany()로 전체 엔티티를 가져와야 transformer가 적용됨
     const results = await this.testResultRepository
       .createQueryBuilder('result')
       .where('result.group_id = :groupId', { groupId })
       .orderBy('result.createdAt', 'DESC')
-      .select(['result.id', 'result.createdAt', 'result.userMeta'])
       .getMany();
-    return results;
+    
+    // 필요한 필드만 반환
+    return results.map(r => ({
+      id: r.id,
+      createdAt: r.createdAt,
+      userMeta: r.userMeta,
+    }));
   }
 
   // 그룹에 속하지 않은 test_results 조회 (그룹에 추가할 후보)
   async getUnassignedResults(userId: number) {
+    // getMany()로 전체 엔티티를 가져와야 transformer가 적용됨
     const results = await this.testResultRepository
       .createQueryBuilder('result')
       .where('result.group_id IS NULL')
       .orderBy('result.createdAt', 'DESC')
       .take(100)
-      .select(['result.id', 'result.createdAt', 'result.userMeta'])
       .getMany();
-    return results;
+    
+    // 필요한 필드만 반환
+    return results.map(r => ({
+      id: r.id,
+      createdAt: r.createdAt,
+      userMeta: r.userMeta,
+    }));
   }
 
 }

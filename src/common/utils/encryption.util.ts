@@ -6,9 +6,13 @@ import * as crypto from 'crypto';
  */
 
 // 환경변수에서 암호화 키 가져오기 (32바이트 = 256비트)
-const getEncryptionKey = (): Buffer => {
+const getEncryptionKey = (): Buffer | null => {
   const key = process.env.ENCRYPTION_KEY;
   if (!key) {
+    // 개발 환경에서는 키 없이도 동작 (암호화 비활성화)
+    if (process.env.NODE_ENV !== 'production') {
+      return null;
+    }
     throw new Error('ENCRYPTION_KEY 환경변수가 설정되지 않았습니다.');
   }
   // 키가 32바이트가 아니면 SHA-256으로 해시하여 32바이트로 만듦
@@ -27,6 +31,12 @@ export function encrypt(plainText: string | null | undefined): string | null {
 
   try {
     const key = getEncryptionKey();
+    
+    // 키가 없으면 암호화 없이 원본 반환 (개발 환경)
+    if (!key) {
+      return plainText;
+    }
+    
     const iv = crypto.randomBytes(12); // GCM 권장 IV 길이: 12바이트
     const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
 
@@ -59,6 +69,12 @@ export function decrypt(encryptedText: string | null | undefined): string | null
 
   try {
     const key = getEncryptionKey();
+    
+    // 키가 없으면 원본 반환 (개발 환경)
+    if (!key) {
+      return encryptedText;
+    }
+    
     const parts = encryptedText.split(':');
     
     if (parts.length !== 3) {
