@@ -1,4 +1,5 @@
 import { IsString, IsNumber, IsOptional, IsArray } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
 
 // 결제 승인 요청 DTO
 export class ConfirmPaymentDto {
@@ -9,12 +10,14 @@ export class ConfirmPaymentDto {
   orderId: string; // merchantUid
 
   @IsNumber()
+  @Type(() => Number)
   amount: number;
 }
 
 // 환불 요청 DTO
 export class RefundPaymentDto {
   @IsNumber()
+  @Type(() => Number)
   paymentId: number;
 
   @IsString()
@@ -22,23 +25,28 @@ export class RefundPaymentDto {
 
   @IsOptional()
   @IsNumber()
+  @Type(() => Number)
   refundAmount?: number; // 부분 환불 시
 
   @IsOptional()
   @IsArray()
+  @Type(() => Number)
   ticketIds?: number[]; // 환불할 티켓 지정
 }
 
 // 주문 생성 요청 DTO
 export class CreateOrderDto {
   @IsNumber()
+  @Type(() => Number)
   productId: number;
 
   @IsNumber()
+  @Type(() => Number)
   quantity: number;
 
   @IsOptional()
   @IsNumber()
+  @Type(() => Number)
   groupId?: number;
 }
 
