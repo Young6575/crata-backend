@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Request, UseGuards, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Post, Request, UseGuards, ValidationPipe } from '@nestjs/common';
 import { UserService } from './user.service';
 import { AuthGuard } from '@nestjs/passport';
 
@@ -6,6 +6,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { CreateIndividualUserDto } from './dto/create-individual-user.dto';
 import { CreateCompanyManagerDto } from './dto/create-company-manager.dto';
 import { CreateTeacherDto } from './dto/create-teacher.dto';
+import { WithdrawUserDto } from './dto/withdraw-user.dto';
 
 @Controller('user') // http://localhost:3000/user
 export class UserController {
@@ -41,5 +42,12 @@ export class UserController {
     async getProfile(@Request() req) {
         // DB에서 사용자 정보 조회 (name, email 등 포함)
         return this.userService.findById(req.user.userId);
+    }
+
+    // 4. [회원 탈퇴] DELETE /user/withdraw
+    @UseGuards(AuthGuard('jwt'))
+    @Delete('/withdraw')
+    async withdraw(@Request() req, @Body(ValidationPipe) dto: WithdrawUserDto) {
+        return this.userService.withdrawUser(req.user.userId, dto.password);
     }
 }
