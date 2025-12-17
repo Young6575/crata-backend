@@ -18,9 +18,10 @@ export class ProductService {
         private dataSource: DataSource
     ) {}
 
-    // 모든 상품 목록 조회
+    // 모든 상품 목록 조회 (활성화된 상품만)
     async findAllProducts(): Promise<Product[]> {
         return this.productRepository.find({
+            where: { status: 'ACTIVE' },
             relations: ['priceTiers'],
         });
     }
