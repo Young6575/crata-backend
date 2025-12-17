@@ -44,6 +44,11 @@ export class Product {
   @Column({ type: 'jsonb', nullable: true })
   colorResultPages: number[];
 
+  // 결과지 타입 (behavior, color, fortune 등)
+  // fortune: 1년 컨설팅 (대운 결과지)
+  @Column({ nullable: true, default: 'behavior' })
+  resultType: string;
+
   // -------------------------------------------------------
   // [추가] 1. "종합 패키지"용 연결 (1:N)
   // (이 상품이 어떤 검사지들로 구성되어 있는지)

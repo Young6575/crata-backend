@@ -95,6 +95,8 @@ export class TicketService {
             resultPages: ticket.product.resultPages || null,
             // 색채유형 결과지 페이지 조합
             colorResultPages: ticket.product.colorResultPages || null,
+            // 결과지 타입 (behavior, color, fortune)
+            resultType: ticket.product.resultType || 'behavior',
         }
     }
 }

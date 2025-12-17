@@ -54,6 +54,11 @@ export class UpdateAdminProductDto {
   @IsArray()
   @IsNumber({}, { each: true })
   colorResultPages?: number[];
+
+  // 결과지 타입 (behavior, color, fortune)
+  @IsOptional()
+  @IsString()
+  resultType?: string;
 }
 
 export class UpdateProductStatusDto {

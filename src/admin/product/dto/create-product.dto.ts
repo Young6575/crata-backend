@@ -77,4 +77,10 @@ export class CreateAdminProductDto {
   @IsArray()
   @IsNumber({}, { each: true })
   colorResultPages?: number[];
+
+  // 결과지 타입 (behavior, color, fortune)
+  // fortune: 1년 컨설팅 (대운 결과지)
+  @IsOptional()
+  @IsString()
+  resultType?: string;
 }

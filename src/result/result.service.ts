@@ -136,6 +136,8 @@ export class ResultService {
       createdAt: result.createdAt,
       // 결과지 페이지 조합 (behavior 검사용) - product에서 가져옴
       resultPages: result.ticket?.product?.resultPages || null,
+      // 결과지 타입 (behavior, color, fortune)
+      resultType: result.ticket?.product?.resultType || 'behavior',
     };
   }
 }
