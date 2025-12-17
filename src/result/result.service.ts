@@ -2,17 +2,73 @@ import {
   Injectable,
   NotFoundException,
   ForbiddenException,
+  BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { TestResult } from './test-result.entity';
+import { Ticket } from '../ticket/ticket.entity';
 
 @Injectable()
 export class ResultService {
   constructor(
     @InjectRepository(TestResult)
     private readonly testResultRepo: Repository<TestResult>,
+    @InjectRepository(Ticket)
+    private readonly ticketRepo: Repository<Ticket>,
   ) {}
+
+  /**
+   * Fortune(1년 컨설팅) 결과 저장
+   * test/version 없이 저장 가능
+   */
+  async saveFortuneResult(dto: {
+    ticketCode: string;
+    userMeta: any;
+    resultSnapshot: any;
+  }) {
+    // 티켓 검증
+    const ticket = await this.ticketRepo.findOne({
+      where: { code: dto.ticketCode },
+      relations: ['product', 'group'],
+    });
+
+    if (!ticket) {
+      throw new NotFoundException('티켓을 찾을 수 없습니다.');
+    }
+
+    if (ticket.status !== 'AVAILABLE') {
+      throw new BadRequestException('이미 사용된 티켓입니다.');
+    }
+
+    // 티켓 상태 업데이트
+    ticket.status = 'USED';
+    ticket.isCompleted = true;
+    ticket.usedAt = new Date();
+    await this.ticketRepo.save(ticket);
+
+    // 결과 저장 (test/version은 null)
+    const result = this.testResultRepo.create({
+      test: null,
+      version: null,
+      ticket,
+      group: ticket.group || null,
+      userMeta: dto.userMeta,
+      answers: [],
+      resultSnapshot: {
+        ...dto.resultSnapshot,
+        type: 'fortune',
+      },
+      resultVersion: 'fortune-v1',
+    });
+
+    const saved = await this.testResultRepo.save(result);
+
+    return {
+      resultId: saved.id,
+      message: 'Fortune 결과가 저장되었습니다.',
+    };
+  }
 
   /**
    * 사용자의 검사 결과 목록 조회

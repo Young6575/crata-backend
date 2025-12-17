@@ -34,13 +34,13 @@ export class TestResult {
   @JoinColumn({ name: 'user_id' })
   user: User | null; // 예: 25 (개인 구매자)
 
-  @ManyToOne(() => Test, (test) => test.testResults)
+  @ManyToOne(() => Test, (test) => test.testResults, { nullable: true })
   @JoinColumn({ name: 'test_id' })
-  test: Test; // 예: 'BEHAVIOR'
+  test: Test | null; // 예: 'BEHAVIOR' (fortune은 null)
 
-  @ManyToOne(() => TestVersion, (version) => version.testResults)
+  @ManyToOne(() => TestVersion, (version) => version.testResults, { nullable: true })
   @JoinColumn({ name: 'version_id' })
-  version: TestVersion; // 예: 'BEHAVIOR_V10'
+  version: TestVersion | null; // 예: 'BEHAVIOR_V10' (fortune은 null)
 
   @OneToOne(() => Ticket, (ticket) => ticket.testResult)
   @JoinColumn({ name: 'ticket_id' })

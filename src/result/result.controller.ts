@@ -1,6 +1,8 @@
 import {
   Controller,
   Get,
+  Post,
+  Body,
   Param,
   Query,
   UseGuards,
@@ -10,9 +12,19 @@ import { ResultService } from './result.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @Controller('api/results')
-@UseGuards(JwtAuthGuard)
 export class ResultController {
   constructor(private readonly resultService: ResultService) {}
+
+  /**
+   * POST /api/results/fortune
+   * Fortune(1년 컨설팅) 결과 저장 - 인증 불필요
+   */
+  @Post('fortune')
+  async saveFortuneResult(
+    @Body() body: { ticketCode: string; userMeta: any; resultSnapshot: any },
+  ) {
+    return this.resultService.saveFortuneResult(body);
+  }
 
   /**
    * GET /api/results
@@ -20,6 +32,7 @@ export class ResultController {
    * admin인 경우 모든 결과 조회
    */
   @Get()
+  @UseGuards(JwtAuthGuard)
   async getMyResults(@Request() req: any) {
     if (req.user.role === 'admin') {
       return this.resultService.findAll();
@@ -33,6 +46,7 @@ export class ResultController {
    * admin인 경우 모든 결과 접근 가능
    */
   @Get(':id')
+  @UseGuards(JwtAuthGuard)
   async getResult(@Param('id') id: string, @Request() req: any) {
     return this.resultService.findOne(id, req.user.userId, req.user.role);
   }
