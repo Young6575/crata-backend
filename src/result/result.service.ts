@@ -26,25 +26,51 @@ export class ResultService {
       .leftJoinAndSelect('result.test', 'test')
       .leftJoinAndSelect('result.version', 'version')
       .leftJoinAndSelect('result.user', 'user')
+      .leftJoinAndSelect('result.group', 'resultGroup')
       .leftJoinAndSelect('result.ticket', 'ticket')
       .leftJoinAndSelect('ticket.order', 'order')
+      .leftJoinAndSelect('ticket.group', 'ticketGroup')
       .leftJoinAndSelect('order.user', 'orderUser')
       .where('user.userId = :userId', { userId })
       .orWhere('orderUser.userId = :userId', { userId })
       .orderBy('result.createdAt', 'DESC')
       .getMany();
 
-    return results.map((result) => ({
-      id: result.id,
-      testName: result.test?.name || '알 수 없음',
-      testSlug: result.test?.slug || '',
-      versionCode: result.version?.versionCode || '',
-      resultVersion: result.resultVersion,
-      userMeta: {
-        name: result.userMeta?.name || '익명',
-      },
-      createdAt: result.createdAt,
-    }));
+    return results.map((result) => {
+      // 나이 계산
+      let age: number | null = null;
+      const birthDate = result.userMeta?.birthDate;
+      if (birthDate) {
+        const birth = new Date(birthDate);
+        const today = new Date();
+        age = today.getFullYear() - birth.getFullYear();
+        const monthDiff = today.getMonth() - birth.getMonth();
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+          age--;
+        }
+      }
+
+      return {
+        id: result.id,
+        testName: result.test?.name || '알 수 없음',
+        testSlug: result.test?.slug || '',
+        versionCode: result.version?.versionCode || '',
+        resultVersion: result.resultVersion,
+        userMeta: {
+          name: result.userMeta?.name || '익명',
+          birthDate: result.userMeta?.birthDate || null,
+          age,
+        },
+        group: result.group ? {
+          id: result.group.groupId,
+          name: result.group.groupName,
+        } : result.ticket?.group ? {
+          id: result.ticket.group.groupId,
+          name: result.ticket.group.groupName,
+        } : null,
+        createdAt: result.createdAt,
+      };
+    });
   }
 
   /**
